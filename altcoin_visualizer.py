@@ -773,7 +773,7 @@ class AltcoinRatioVisualizer:
                 font=dict(size=12, color='white')
             )
 
-        # Update layout - MOBILE TOUCH OPTIMIZED
+        # Update layout - NATIVE ZOOM ALLOWED
         fig.update_layout(
             title=dict(
                 text='<b>Altcoin Terminal</b>',
@@ -781,12 +781,12 @@ class AltcoinRatioVisualizer:
                 xanchor='center',
                 font=dict(size=16)
             ),
-            hovermode='x unified',
+            hovermode='closest',
             template='plotly_dark',
             autosize=True,
             height=None,
             showlegend=True,
-            dragmode='zoom',  # ZOOM mode - elimle yakınlaştırma
+            dragmode=False,  # Plotly drag KAPALI - native kullan
             xaxis_rangeslider_visible=False,
             legend=dict(
                 orientation="h",
@@ -831,23 +831,16 @@ class AltcoinRatioVisualizer:
             gridcolor='rgba(128, 128, 128, 0.2)'
         )
 
-        # Save HTML with FULL MOBILE GESTURE config
+        # NATIVE BROWSER ZOOM - Plotly'yi engellemiyoruz
         config = {
-            'displayModeBar': False,  # BUTON YOK - sadece elimle
+            'displayModeBar': False,
             'displaylogo': False,
-            'scrollZoom': True,  # Mouse wheel zoom
-            'doubleClick': 'reset',  # Double-tap reset
+            'scrollZoom': False,  # Plotly zoom KAPALI - browser kullan
+            'doubleClick': False,
             'responsive': True,
-            'modeBarButtonsToRemove': [],
-            'toImageButtonOptions': {
-                'format': 'png',
-                'filename': 'altcoin_terminal',
-                'height': 1200,
-                'width': 2400,
-                'scale': 2
-            },
-            'staticPlot': False,  # Interactive mode
+            'staticPlot': False,
             'editable': False,
+            'showTips': False,
         }
 
         # HTML oluştur
@@ -874,20 +867,18 @@ class AltcoinRatioVisualizer:
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
             background: #0d1117;
             color: #c9d1d9;
-            overflow: hidden;
-            touch-action: manipulation;  /* Enable pinch-zoom */
-            -webkit-user-select: none;
-            -webkit-touch-callout: none;
+            overflow: auto;
+            touch-action: auto !important;  /* NATIVE zoom izin ver */
+            -webkit-overflow-scrolling: touch;
         }}
 
-        /* Enable touch gestures on chart */
-        .plotly-graph-div {{
-            touch-action: pan-x pan-y pinch-zoom !important;
-            -webkit-user-select: none;
-        }}
-
-        .js-plotly-plot {{
-            touch-action: pan-x pan-y pinch-zoom !important;
+        /* NATIVE browser zoom için */
+        .plotly-graph-div,
+        .js-plotly-plot,
+        .plotly,
+        svg.main-svg {{
+            touch-action: auto !important;  /* Plotly engelini kaldır */
+            pointer-events: auto !important;
         }}
 
         /* Header Bar - HIDDEN on mobile */
@@ -1200,27 +1191,37 @@ class AltcoinRatioVisualizer:
             location.reload();
         }}, 900000);
 
-        // Touch gestures optimization for mobile
+        // NATIVE browser zoom - Plotly'yi bypass et
         if ('ontouchstart' in window) {{
-            console.log('📱 Touch device - elimle zoom/pan aktif');
+            console.log('📱 NATIVE zoom aktif - elimle yakınlaştır!');
 
-            // Auto fullscreen on mobile
+            // Plotly'nin touch olaylarını override et
+            setTimeout(function() {{
+                const plotDiv = document.querySelector('.plotly-graph-div');
+                if (plotDiv) {{
+                    // Remove all Plotly touch restrictions
+                    plotDiv.style.touchAction = 'auto';
+
+                    const svgs = plotDiv.querySelectorAll('svg');
+                    svgs.forEach(svg => {{
+                        svg.style.touchAction = 'auto';
+                        svg.style.pointerEvents = 'auto';
+                    }});
+
+                    console.log('✅ Native zoom enabled!');
+                }}
+            }}, 500);
+
+            // Auto fullscreen
             setTimeout(function() {{
                 if (document.documentElement.requestFullscreen) {{
                     document.documentElement.requestFullscreen().catch(err => {{
-                        console.log('Fullscreen request:', err.message);
+                        console.log('Fullscreen:', err.message);
                     }});
                 }} else if (document.documentElement.webkitRequestFullscreen) {{
                     document.documentElement.webkitRequestFullscreen();
                 }}
             }}, 1000);
-
-            // Prevent default zoom behavior on double-tap (let Plotly handle it)
-            document.addEventListener('touchstart', function(e) {{
-                if (e.touches.length > 1) {{
-                    e.preventDefault();
-                }}
-            }}, {{ passive: false }});
         }}
 
         // Window resize handler
