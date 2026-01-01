@@ -773,30 +773,34 @@ class AltcoinRatioVisualizer:
                 font=dict(size=12, color='white')
             )
 
-        # Update layout - MOBILE RESPONSIVE
+        # Update layout - FULLY RESPONSIVE FOR MOBILE
         fig.update_layout(
             title=dict(
-                text='<b>Complete Real-Time Trading Analysis Dashboard</b>',
+                text='<b>Altcoin Terminal Pro</b>',
                 x=0.5,
                 xanchor='center',
-                font=dict(size=22)
+                font=dict(size=18)
             ),
             hovermode='x unified',
             template='plotly_dark',
-            autosize=True,  # Auto-resize için
-            height=1200,
+            autosize=True,  # Otomatik boyutlandırma
+            height=None,  # Auto height
             showlegend=True,
-            dragmode='pan',
+            dragmode='pan',  # Pan mode for mobile
             xaxis_rangeslider_visible=False,
             legend=dict(
                 orientation="h",
                 yanchor="bottom",
-                y=1.02,
-                xanchor="right",
-                x=1
+                y=1.01,
+                xanchor="center",
+                x=0.5,
+                font=dict(size=10)
             ),
-            # Mobile için margin ayarları
-            margin=dict(l=50, r=50, t=100, b=50)
+            # Minimum margins for maximum chart space
+            margin=dict(l=40, r=20, t=80, b=40),
+            # Mobile optimizations
+            font=dict(size=11),
+            hoverlabel=dict(font_size=11)
         )
 
         # Update axes
@@ -829,22 +833,26 @@ class AltcoinRatioVisualizer:
             gridcolor='rgba(128, 128, 128, 0.2)'
         )
 
-        # Save HTML with interactive config (Professional + Mobile Optimized)
+        # Save HTML with MOBILE-OPTIMIZED config
         config = {
             'displayModeBar': True,
             'displaylogo': False,
-            'scrollZoom': True,  # Mouse wheel zoom
-            'modeBarButtonsToRemove': ['lasso2d', 'select2d'],
-            'modeBarButtonsToAdd': ['toggleSpikelines'],
-            'doubleClick': 'reset+autosize',
-            'responsive': True,  # Responsive mode
+            'scrollZoom': True,  # ZOOM: Mouse wheel + pinch zoom
+            'doubleClick': 'reset+autosize',  # Double-tap zoom reset
+            'responsive': True,  # RESPONSIVE: Auto-resize
+            'dragmode': 'pan',  # PAN mode aktif
+            'modeBarButtonsToRemove': ['lasso2d', 'select2d', 'toggleSpikelines'],
+            'modeBarButtons': [['zoom2d', 'pan2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d']],
             'toImageButtonOptions': {
                 'format': 'png',
                 'filename': 'altcoin_terminal',
                 'height': 1200,
                 'width': 2400,
                 'scale': 2
-            }
+            },
+            # Mobile gesture support
+            'touchZoom': True,  # Pinch-to-zoom
+            'touchPan': True,   # Touch pan
         }
 
         # HTML oluştur
@@ -962,20 +970,33 @@ class AltcoinRatioVisualizer:
             box-shadow: 0 4px 12px rgba(56, 139, 253, 0.4);
         }}
 
-        /* Chart Container */
+        /* Chart Container - MOBILE OPTIMIZED */
         .chart-container {{
             width: 100%;
             height: calc(100vh - 60px);
-            padding: 10px;
+            padding: 5px;
             background: #0d1117;
+            position: relative;
+            overflow: hidden;
         }}
 
         #chart {{
             width: 100%;
             height: 100%;
             background: #161b22;
-            border-radius: 8px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            border-radius: 6px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }}
+
+        /* Plotly container responsive */
+        #chart .plotly-graph-div {{
+            width: 100% !important;
+            height: 100% !important;
+        }}
+
+        #chart .main-svg {{
+            width: 100% !important;
+            height: 100% !important;
         }}
 
         /* Fullscreen Mode */
@@ -996,34 +1017,70 @@ class AltcoinRatioVisualizer:
         /* Mobile Optimizations */
         @media (max-width: 768px) {{
             .header {{
-                padding: 10px 15px;
+                padding: 8px 10px;
             }}
 
             .logo {{
-                font-size: 1.2rem;
+                font-size: 1rem;
             }}
 
             .status {{
-                font-size: 0.75rem;
-                padding: 4px 8px;
+                font-size: 0.7rem;
+                padding: 3px 6px;
+            }}
+
+            .status-dot {{
+                width: 6px;
+                height: 6px;
             }}
 
             .btn {{
-                padding: 6px 12px;
-                font-size: 12px;
+                padding: 5px 10px;
+                font-size: 11px;
             }}
 
             .header-left {{
-                gap: 10px;
+                gap: 8px;
             }}
 
             .controls {{
-                gap: 6px;
+                gap: 5px;
             }}
 
             .chart-container {{
-                padding: 5px;
-                height: calc(100vh - 50px);
+                padding: 2px;
+                height: calc(100vh - 45px);
+            }}
+
+            #chart {{
+                border-radius: 4px;
+            }}
+        }}
+
+        /* Extra small screens */
+        @media (max-width: 480px) {{
+            .logo {{
+                font-size: 0.9rem;
+            }}
+
+            .status span {{
+                display: none;
+            }}
+
+            .status-dot {{
+                width: 8px;
+                height: 8px;
+                margin: 0;
+            }}
+
+            .btn {{
+                padding: 4px 8px;
+                font-size: 10px;
+            }}
+
+            .chart-container {{
+                padding: 1px;
+                height: calc(100vh - 40px);
             }}
         }}
 
@@ -1133,7 +1190,57 @@ class AltcoinRatioVisualizer:
         // Touch gestures optimization for mobile
         if ('ontouchstart' in window) {{
             console.log('Touch device detected - mobile optimizations active');
+
+            // Enable double-tap zoom
+            let lastTap = 0;
+            document.addEventListener('touchend', function(e) {{
+                const currentTime = new Date().getTime();
+                const tapLength = currentTime - lastTap;
+                if (tapLength < 500 && tapLength > 0) {{
+                    // Double tap detected
+                    const plotDiv = document.querySelector('.plotly-graph-div');
+                    if (plotDiv) {{
+                        Plotly.relayout(plotDiv, {{
+                            'xaxis.autorange': true,
+                            'yaxis.autorange': true
+                        }});
+                    }}
+                }}
+                lastTap = currentTime;
+            }});
         }}
+
+        // Window resize handler
+        let resizeTimer;
+        window.addEventListener('resize', function() {{
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() {{
+                const plotDiv = document.querySelector('.plotly-graph-div');
+                if (plotDiv) {{
+                    Plotly.Plots.resize(plotDiv);
+                }}
+            }}, 250);
+        }});
+
+        // Orientation change handler
+        window.addEventListener('orientationchange', function() {{
+            setTimeout(function() {{
+                const plotDiv = document.querySelector('.plotly-graph-div');
+                if (plotDiv) {{
+                    Plotly.Plots.resize(plotDiv);
+                }}
+            }}, 100);
+        }});
+
+        // Initial resize
+        window.addEventListener('load', function() {{
+            setTimeout(function() {{
+                const plotDiv = document.querySelector('.plotly-graph-div');
+                if (plotDiv) {{
+                    Plotly.Plots.resize(plotDiv);
+                }}
+            }}, 100);
+        }});
     </script>
 </body>
 </html>'''
