@@ -773,20 +773,20 @@ class AltcoinRatioVisualizer:
                 font=dict(size=12, color='white')
             )
 
-        # Update layout - FULLY RESPONSIVE FOR MOBILE
+        # Update layout - MOBILE TOUCH OPTIMIZED
         fig.update_layout(
             title=dict(
-                text='<b>Altcoin Terminal Pro</b>',
+                text='<b>Altcoin Terminal</b>',
                 x=0.5,
                 xanchor='center',
-                font=dict(size=18)
+                font=dict(size=16)
             ),
             hovermode='x unified',
             template='plotly_dark',
-            autosize=True,  # Otomatik boyutlandırma
-            height=None,  # Auto height
+            autosize=True,
+            height=None,
             showlegend=True,
-            dragmode='pan',  # Pan mode for mobile
+            dragmode='zoom',  # ZOOM mode - elimle yakınlaştırma
             xaxis_rangeslider_visible=False,
             legend=dict(
                 orientation="h",
@@ -794,13 +794,11 @@ class AltcoinRatioVisualizer:
                 y=1.01,
                 xanchor="center",
                 x=0.5,
-                font=dict(size=10)
+                font=dict(size=9)
             ),
-            # Minimum margins for maximum chart space
-            margin=dict(l=40, r=20, t=80, b=40),
-            # Mobile optimizations
-            font=dict(size=11),
-            hoverlabel=dict(font_size=11)
+            margin=dict(l=30, r=10, t=60, b=30),
+            font=dict(size=10),
+            hoverlabel=dict(font_size=10)
         )
 
         # Update axes
@@ -833,16 +831,14 @@ class AltcoinRatioVisualizer:
             gridcolor='rgba(128, 128, 128, 0.2)'
         )
 
-        # Save HTML with MOBILE-OPTIMIZED config
+        # Save HTML with FULL MOBILE GESTURE config
         config = {
-            'displayModeBar': True,
+            'displayModeBar': False,  # BUTON YOK - sadece elimle
             'displaylogo': False,
-            'scrollZoom': True,  # ZOOM: Mouse wheel + pinch zoom
-            'doubleClick': 'reset+autosize',  # Double-tap zoom reset
-            'responsive': True,  # RESPONSIVE: Auto-resize
-            'dragmode': 'pan',  # PAN mode aktif
-            'modeBarButtonsToRemove': ['lasso2d', 'select2d', 'toggleSpikelines'],
-            'modeBarButtons': [['zoom2d', 'pan2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d']],
+            'scrollZoom': True,  # Mouse wheel zoom
+            'doubleClick': 'reset',  # Double-tap reset
+            'responsive': True,
+            'modeBarButtonsToRemove': [],
             'toImageButtonOptions': {
                 'format': 'png',
                 'filename': 'altcoin_terminal',
@@ -850,23 +846,23 @@ class AltcoinRatioVisualizer:
                 'width': 2400,
                 'scale': 2
             },
-            # Mobile gesture support
-            'touchZoom': True,  # Pinch-to-zoom
-            'touchPan': True,   # Touch pan
+            'staticPlot': False,  # Interactive mode
+            'editable': False,
         }
 
         # HTML oluştur
         html_string = fig.to_html(config=config, include_plotlyjs='cdn')
 
-        # MOBILE OPTIMIZED + FULLSCREEN HTML
+        # MOBILE TOUCH OPTIMIZED - AUTO FULLSCREEN
         mobile_html = f'''<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=10.0, user-scalable=yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Altcoin Dashboard - Professional Terminal</title>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Altcoin Terminal</title>
     <style>
         * {{
             margin: 0;
@@ -878,21 +874,36 @@ class AltcoinRatioVisualizer:
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
             background: #0d1117;
             color: #c9d1d9;
-            overflow-x: hidden;
+            overflow: hidden;
+            touch-action: manipulation;  /* Enable pinch-zoom */
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
         }}
 
-        /* Header Bar */
+        /* Enable touch gestures on chart */
+        .plotly-graph-div {{
+            touch-action: pan-x pan-y pinch-zoom !important;
+            -webkit-user-select: none;
+        }}
+
+        .js-plotly-plot {{
+            touch-action: pan-x pan-y pinch-zoom !important;
+        }}
+
+        /* Header Bar - HIDDEN on mobile */
         .header {{
             background: linear-gradient(135deg, #1a1f2e 0%, #0d1117 100%);
-            padding: 12px 20px;
+            padding: 8px 15px;
             box-shadow: 0 2px 20px rgba(0,0,0,0.5);
-            position: sticky;
+            position: fixed;
             top: 0;
+            left: 0;
+            right: 0;
             z-index: 9999;
-            display: flex;
+            display: none;  /* HIDDEN - buton yok */
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid #30363d;
+            border-bottom: 1px solid #30363d;
         }}
 
         .header-left {{
@@ -970,13 +981,15 @@ class AltcoinRatioVisualizer:
             box-shadow: 0 4px 12px rgba(56, 139, 253, 0.4);
         }}
 
-        /* Chart Container - MOBILE OPTIMIZED */
+        /* Chart Container - FULL SCREEN */
         .chart-container {{
-            width: 100%;
-            height: calc(100vh - 60px);
-            padding: 5px;
+            width: 100vw;
+            height: 100vh;
+            padding: 0;
             background: #0d1117;
-            position: relative;
+            position: fixed;
+            top: 0;
+            left: 0;
             overflow: hidden;
         }}
 
@@ -1189,25 +1202,25 @@ class AltcoinRatioVisualizer:
 
         // Touch gestures optimization for mobile
         if ('ontouchstart' in window) {{
-            console.log('Touch device detected - mobile optimizations active');
+            console.log('📱 Touch device - elimle zoom/pan aktif');
 
-            // Enable double-tap zoom
-            let lastTap = 0;
-            document.addEventListener('touchend', function(e) {{
-                const currentTime = new Date().getTime();
-                const tapLength = currentTime - lastTap;
-                if (tapLength < 500 && tapLength > 0) {{
-                    // Double tap detected
-                    const plotDiv = document.querySelector('.plotly-graph-div');
-                    if (plotDiv) {{
-                        Plotly.relayout(plotDiv, {{
-                            'xaxis.autorange': true,
-                            'yaxis.autorange': true
-                        }});
-                    }}
+            // Auto fullscreen on mobile
+            setTimeout(function() {{
+                if (document.documentElement.requestFullscreen) {{
+                    document.documentElement.requestFullscreen().catch(err => {{
+                        console.log('Fullscreen request:', err.message);
+                    }});
+                }} else if (document.documentElement.webkitRequestFullscreen) {{
+                    document.documentElement.webkitRequestFullscreen();
                 }}
-                lastTap = currentTime;
-            }});
+            }}, 1000);
+
+            // Prevent default zoom behavior on double-tap (let Plotly handle it)
+            document.addEventListener('touchstart', function(e) {{
+                if (e.touches.length > 1) {{
+                    e.preventDefault();
+                }}
+            }}, {{ passive: false }});
         }}
 
         // Window resize handler
