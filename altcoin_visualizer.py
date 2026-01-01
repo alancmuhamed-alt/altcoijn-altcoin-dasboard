@@ -773,10 +773,16 @@ class AltcoinRatioVisualizer:
                 font=dict(size=12, color='white')
             )
 
+        # Add timestamp to title
+        from datetime import datetime
+        import pytz
+        dubai_tz = pytz.timezone('Asia/Dubai')
+        current_time = datetime.now(dubai_tz).strftime('%H:%M:%S')
+
         # Update layout - NATIVE ZOOM ALLOWED
         fig.update_layout(
             title=dict(
-                text='<b>Altcoin Terminal</b>',
+                text=f'<b>Altcoin Terminal</b><br><sub style="color:#888">Last Update: Dubai {current_time}</sub>',
                 x=0.5,
                 xanchor='center',
                 font=dict(size=16)
