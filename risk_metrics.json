@@ -6,19 +6,19 @@
     "trend": "Neutral"
   },
   "ETH": {
-    "risk": 52,
+    "risk": 23,
+    "volatility": "Low",
+    "volume": "Very High",
+    "trend": "Neutral"
+  },
+  "BNB": {
+    "risk": 31,
     "volatility": "Low",
     "volume": "Medium",
     "trend": "Neutral"
   },
-  "BNB": {
-    "risk": 32,
-    "volatility": "Low",
-    "volume": "High",
-    "trend": "Neutral"
-  },
   "DASH": {
-    "risk": 38,
+    "risk": 27,
     "volatility": "Low",
     "volume": "High",
     "trend": "Neutral"
