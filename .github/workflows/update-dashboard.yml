@@ -8,6 +8,11 @@ on:
   # Manuel tetikleme için
   workflow_dispatch:
 
+  # Her push'ta çalışır
+  push:
+    branches:
+      - main
+
 jobs:
   update:
     runs-on: ubuntu-latest
