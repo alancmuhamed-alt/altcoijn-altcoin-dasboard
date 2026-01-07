@@ -106,7 +106,7 @@ def main():
         'SOL': 'SOL/USDT',
         'ETH': 'ETH/USDT',
         'BNB': 'BNB/USDT',
-        'DASH': 'DASH/USDT'
+        'XRP': 'XRP/USDT'  # Changed from DASH (not available on Kraken)
     }
 
     risk_metrics = risk_calculator.calculate_all_metrics(coins)
