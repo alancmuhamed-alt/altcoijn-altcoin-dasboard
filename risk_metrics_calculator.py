@@ -12,7 +12,33 @@ import json
 
 class RiskMetricsCalculator:
     def __init__(self):
-        self.exchange = ccxt.binance({
+        self.exchange = self._initialize_exchange()
+
+    def _initialize_exchange(self):
+        """Initialize exchange with fallback options"""
+        exchanges_to_try = [
+            ('binance', ccxt.binance),
+            ('kraken', ccxt.kraken),
+            ('bybit', ccxt.bybit),
+        ]
+
+        for name, exchange_class in exchanges_to_try:
+            try:
+                exchange = exchange_class({
+                    'enableRateLimit': True,
+                    'options': {'defaultType': 'spot'}
+                })
+                # Test if exchange works
+                exchange.load_markets()
+                print(f"✓ RiskMetrics using {name} exchange")
+                return exchange
+            except Exception as e:
+                print(f"⚠ {name} failed: {str(e)[:100]}")
+                continue
+
+        # Fallback to binance
+        print("⚠ All exchanges failed, using binance as fallback")
+        return ccxt.binance({
             'enableRateLimit': True,
             'options': {'defaultType': 'spot'}
         })

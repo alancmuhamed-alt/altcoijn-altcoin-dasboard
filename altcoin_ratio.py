@@ -15,8 +15,32 @@ class AltcoinRatioCalculator:
         USDT.D = USDT dominance
         BTC.D = Bitcoin dominance
         """
-        self.exchange = ccxt.binance({'enableRateLimit': True})
+        # Try multiple exchanges (Binance may be geo-blocked on GitHub Actions)
+        self.exchange = self._initialize_exchange()
         self.coingecko_base = "https://api.coingecko.com/api/v3"
+
+    def _initialize_exchange(self):
+        """Initialize exchange with fallback options"""
+        exchanges_to_try = [
+            ('binance', ccxt.binance),
+            ('kraken', ccxt.kraken),
+            ('bybit', ccxt.bybit),
+        ]
+
+        for name, exchange_class in exchanges_to_try:
+            try:
+                exchange = exchange_class({'enableRateLimit': True})
+                # Test if exchange works by loading markets
+                exchange.load_markets()
+                print(f"✓ Using {name} exchange")
+                return exchange
+            except Exception as e:
+                print(f"⚠ {name} failed: {str(e)[:100]}")
+                continue
+
+        # Fallback to binance if all fail (will error later if truly blocked)
+        print("⚠ All exchanges failed, using binance as fallback")
+        return ccxt.binance({'enableRateLimit': True})
 
     def fetch_market_caps(self, days=30):
         """
