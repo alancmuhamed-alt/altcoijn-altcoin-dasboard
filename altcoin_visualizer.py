@@ -884,20 +884,22 @@ class AltcoinRatioVisualizer:
             hoverlabel=dict(font_size=10)
         )
 
-        # Update axes
+        # Update axes - ZOOM/PAN ENABLEFixedRange=False ekle!
         fig.update_xaxes(
             title_text="Time",
             row=1, col=1,
             showgrid=True,
             gridwidth=1,
-            gridcolor='rgba(128, 128, 128, 0.2)'
+            gridcolor='rgba(128, 128, 128, 0.2)',
+            fixedrange=False  # Enable zoom/pan
         )
         fig.update_yaxes(
             title_text="Price",
             row=1, col=1,
             showgrid=True,
             gridwidth=1,
-            gridcolor='rgba(128, 128, 128, 0.2)'
+            gridcolor='rgba(128, 128, 128, 0.2)',
+            fixedrange=False  # Enable zoom/pan
         )
 
         # Row 2: Dominance Sum RSI axes
@@ -906,7 +908,8 @@ class AltcoinRatioVisualizer:
             row=2, col=1,
             showgrid=True,
             gridwidth=1,
-            gridcolor='rgba(128, 128, 128, 0.2)'
+            gridcolor='rgba(128, 128, 128, 0.2)',
+            fixedrange=False  # Enable zoom/pan
         )
         fig.update_yaxes(
             title_text="RSI",
@@ -914,7 +917,8 @@ class AltcoinRatioVisualizer:
             showgrid=True,
             gridwidth=1,
             gridcolor='rgba(128, 128, 128, 0.2)',
-            range=[0, 100]  # RSI range 0-100
+            range=[0, 100],  # RSI range 0-100
+            fixedrange=False  # Enable zoom/pan
         )
 
         # Row 3: Order Book axes
@@ -923,26 +927,25 @@ class AltcoinRatioVisualizer:
             row=3, col=1,
             showgrid=True,
             gridwidth=1,
-            gridcolor='rgba(128, 128, 128, 0.2)'
+            gridcolor='rgba(128, 128, 128, 0.2)',
+            fixedrange=False  # Enable zoom/pan
         )
         fig.update_yaxes(
             title_text="Cumulative Volume",
             row=3, col=1,
             showgrid=True,
             gridwidth=1,
-            gridcolor='rgba(128, 128, 128, 0.2)'
+            gridcolor='rgba(128, 128, 128, 0.2)',
+            fixedrange=False  # Enable zoom/pan
         )
 
-        # NATIVE BROWSER ZOOM - Plotly'yi engellemiyoruz
+        # ENABLE ZOOM/PAN - Plotly interactive features
         config = {
-            'displayModeBar': False,
+            'scrollZoom': True,  # Mouse wheel zoom
+            'displayModeBar': True,  # Show toolbar
             'displaylogo': False,
-            'scrollZoom': False,  # Plotly zoom KAPALI - browser kullan
-            'doubleClick': False,
+            'modeBarButtonsToAdd': ['drawline', 'drawopenpath', 'eraseshape'],
             'responsive': True,
-            'staticPlot': False,
-            'editable': False,
-            'showTips': False,
         }
 
         # HTML oluştur
