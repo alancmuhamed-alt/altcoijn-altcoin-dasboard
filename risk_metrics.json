@@ -1,8 +1,8 @@
 {
   "SOL": {
-    "risk": 32,
+    "risk": 22,
     "volatility": "Low",
-    "volume": "Medium",
+    "volume": "High",
     "trend": "Neutral"
   },
   "ETH": {
@@ -20,7 +20,7 @@
   "DASH": {
     "risk": 37,
     "volatility": "Low",
-    "volume": "High",
+    "volume": "Medium",
     "trend": "Neutral"
   }
 }
