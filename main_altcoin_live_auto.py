@@ -9,6 +9,9 @@ import pytz
 from altcoin_ratio import AltcoinRatioCalculator
 from altcoin_visualizer import AltcoinRatioVisualizer
 from liquidity_levels import LiquidityAnalyzer
+from risk_metrics_calculator import RiskMetricsCalculator
+from detailed_risk_analyzer import DetailedRiskAnalyzer
+from dominance_sum_rsi import DominanceSumRSI
 
 # Force unbuffered output
 sys.stdout = open(sys.stdout.fileno(), 'w', buffering=1)
@@ -36,6 +39,9 @@ def main():
     calculator = AltcoinRatioCalculator()
     visualizer = AltcoinRatioVisualizer()
     liquidity = LiquidityAnalyzer()
+    risk_calculator = RiskMetricsCalculator()
+    detailed_analyzer = DetailedRiskAnalyzer()
+    dominance_rsi_calc = DominanceSumRSI()
 
     from websocket_stream import BinanceWebSocketStream, BinanceOrderBookStream
 
@@ -132,6 +138,23 @@ def main():
             # Footprint
             footprint_df = calculator.calculate_footprint(ratio_df, lookback=50)
 
+            # Calculate Dominance Sum RSI (hourly update)
+            dom_rsi_df = None
+            if update_count % 4 == 0:  # Every 4th update = 1 hour
+                print("📊 Calculating Dominance Sum RSI...")
+                dom_rsi_df = dominance_rsi_calc.fetch_dominance_data(hours=48)
+                if dom_rsi_df is not None:
+                    dom_rsi_df = dominance_rsi_calc.calculate_rsi(dom_rsi_df, period=14, source='OHLC/4')
+                    dom_sr_levels = dominance_rsi_calc.find_pivot_sr_levels(
+                        dom_rsi_df, left_right=5, tolerance=5.0,
+                        max_supports=4, max_resistances=4
+                    )
+                    dom_rsi_df.attrs['rsi_supports'] = dom_sr_levels['supports']
+                    dom_rsi_df.attrs['rsi_resistances'] = dom_sr_levels['resistances']
+                    print(f"✅ Dominance RSI: {dom_rsi_df['rsi'].iloc[-1]:.2f}")
+            else:
+                print("⏭ Skipping Dominance RSI (updates hourly)")
+
             # Create chart - YENİ VERİYLE
             print(f"📝 Regenerating HTML: {output_file}")
             visualizer.create_combined_chart(
@@ -142,6 +165,7 @@ def main():
                 resistance_levels=sr_result['resistances'],
                 bsl_ssl={'bsl': bsl, 'ssl': ssl},
                 footprint_df=footprint_df,
+                dominance_rsi_df=dom_rsi_df,
                 orderbook_candles=orderbook_candles,
                 output_file=output_file
             )
