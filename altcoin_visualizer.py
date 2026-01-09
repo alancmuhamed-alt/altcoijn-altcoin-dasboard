@@ -861,7 +861,7 @@ class AltcoinRatioVisualizer:
             autosize=True,
             height=None,
             showlegend=True,
-            dragmode=False,  # Plotly drag KAPALI - native kullan
+            dragmode='pan',  # Enable pan mode (zoom with scroll)
             xaxis_rangeslider_visible=False,
             legend=dict(
                 orientation="h",
