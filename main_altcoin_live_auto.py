@@ -169,16 +169,16 @@ def main():
 
     except KeyboardInterrupt:
         print("\n\n⚠ Terminal durduruldu!")
-        candle_stream.stop()
-        orderbook_stream.stop()
-        print("✓ Streams kapatıldı")
+        if orderbook_stream:
+            orderbook_stream.stop()
+        print("✓ Order Book stream kapatıldı")
         sys.exit(0)
     except Exception as e:
         print(f"\n✗ Error: {e}")
         import traceback
         traceback.print_exc()
-        candle_stream.stop()
-        orderbook_stream.stop()
+        if orderbook_stream:
+            orderbook_stream.stop()
         sys.exit(1)
 
 
