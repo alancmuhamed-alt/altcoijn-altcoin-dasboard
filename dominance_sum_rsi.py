@@ -13,8 +13,31 @@ from datetime import datetime, timedelta
 class DominanceSumRSI:
     def __init__(self):
         """Calculate RSI from sum of dominance values (BTC.D + ETH.D + USDT.D + USDC.D)"""
-        self.exchange = ccxt.binance({'enableRateLimit': True})
+        self.exchange = self._initialize_exchange()
         self.coingecko_base = "https://api.coingecko.com/api/v3"
+
+    def _initialize_exchange(self):
+        """Initialize exchange with fallback options"""
+        exchanges_to_try = [
+            ('binance', ccxt.binance),
+            ('kraken', ccxt.kraken),
+            ('bybit', ccxt.bybit),
+        ]
+
+        for name, exchange_class in exchanges_to_try:
+            try:
+                exchange = exchange_class({'enableRateLimit': True})
+                # Test if exchange works
+                exchange.load_markets()
+                print(f"✓ DominanceRSI using {name} exchange")
+                return exchange
+            except Exception as e:
+                print(f"⚠ {name} failed: {str(e)[:100]}")
+                continue
+
+        # Fallback to binance
+        print("⚠ All exchanges failed, using binance as fallback")
+        return ccxt.binance({'enableRateLimit': True})
 
     def fetch_dominance_data(self, hours=48):
         """
