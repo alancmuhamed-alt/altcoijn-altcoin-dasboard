@@ -1,7 +1,7 @@
 {
   "SOL": {
-    "risk": 50,
-    "volatility": "Medium",
+    "risk": 32,
+    "volatility": "Low",
     "volume": "Medium",
     "trend": "Neutral"
   },
@@ -12,13 +12,13 @@
     "trend": "Neutral"
   },
   "BNB": {
-    "risk": 42,
+    "risk": 52,
     "volatility": "Low",
     "volume": "Low",
     "trend": "Neutral"
   },
   "DASH": {
-    "risk": 47,
+    "risk": 57,
     "volatility": "Low",
     "volume": "Low",
     "trend": "Neutral"
