@@ -1,7 +1,7 @@
 {
   "SOL": {
-    "risk": 32,
-    "volatility": "Low",
+    "risk": 50,
+    "volatility": "Medium",
     "volume": "Medium",
     "trend": "Neutral"
   },
