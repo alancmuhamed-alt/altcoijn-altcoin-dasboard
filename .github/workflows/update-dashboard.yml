@@ -40,7 +40,23 @@ jobs:
           git config user.email "actions@github.com"
           git config pull.rebase false
           git add *.html *.json
-          git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 Auto-update dashboard - $(TZ=Asia/Dubai date '+%Y-%m-%d %H:%M:%S') Dubai" && git pull --no-edit && git push)
+
+          # Check if there are changes
+          if ! git diff --quiet || ! git diff --staged --quiet; then
+            git commit -m "🤖 Auto-update dashboard - $(TZ=Asia/Dubai date '+%Y-%m-%d %H:%M:%S') Dubai"
+
+            # Pull with conflict resolution (keep ours = newest data)
+            git pull --no-edit -X ours || true
+
+            # If conflicts still exist, resolve by taking our version
+            if [ -n "$(git ls-files -u)" ]; then
+              git checkout --ours *.html *.json
+              git add *.html *.json
+              git commit -m "🤖 Resolve conflicts - keep latest data"
+            fi
+
+            git push
+          fi
 
       - name: Deploy to GitHub Pages
         run: |
