@@ -487,13 +487,11 @@ class AltcoinRatioVisualizer:
     def create_combined_chart(self, btc_df, ratio_df, orderbook_data,
                                support_levels=None, resistance_levels=None,
                                bsl_ssl=None, footprint_df=None,
-                               dominance_rsi_df=None,
                                orderbook_candles=50,
                                output_file='altcoin_combined.html'):
         """
         Create combined multi-panel chart:
-        - Top panel (50%): Altcoin Ratio with all indicators
-        - Middle panel (20%): Dominance Sum RSI + S/R
+        - Top panel (70%): Altcoin Ratio with all indicators
         - Bottom panel (30%): Real-time Order Book Depth
 
         Args:
@@ -504,27 +502,23 @@ class AltcoinRatioVisualizer:
             resistance_levels: Resistance levels DataFrame
             bsl_ssl: Dict with BSL and SSL values
             footprint_df: Footprint analysis data
-            dominance_rsi_df: Dominance Sum RSI data (BTC.D + ETH.D + USDT.D + USDC.D)
             orderbook_candles: Number of recent candles to show for order book reference
             output_file: Output HTML filename
         """
         from plotly.subplots import make_subplots
 
-        # Create subplots: 3 rows, 1 column
-        # Row 1 (50%): Altcoin Ratio
-        # Row 2 (20%): Dominance Sum RSI
-        # Row 3 (30%): Order Book
+        # Create subplots: 2 rows, 1 column
+        # Top panel (70% height): Main chart
+        # Bottom panel (30% height): Order book depth
         fig = make_subplots(
-            rows=3, cols=1,
-            row_heights=[0.50, 0.20, 0.30],
-            vertical_spacing=0.03,
+            rows=2, cols=1,
+            row_heights=[0.70, 0.30],
+            vertical_spacing=0.05,
             subplot_titles=('<b>Altcoin Ratio [15M] + All Indicators</b>',
-                           '<b>Dominance Sum RSI [1H] + Auto S/R</b>',
                            '<b>Real-Time Order Book Depth</b>'),
             specs=[[{"secondary_y": False}],
-                   [{"secondary_y": False}],
                    [{"secondary_y": False}]],
-            shared_xaxes=False  # Her panel bağımsız zoom
+            shared_xaxes=True  # Alt paneller birlikte hareket eder
         )
 
         # ========== TOP PANEL: MAIN CHART ==========
@@ -688,78 +682,6 @@ class AltcoinRatioVisualizer:
                     row=1, col=1
                 )
 
-        # ========== MIDDLE PANEL: DOMINANCE SUM RSI ==========
-
-        if dominance_rsi_df is not None and 'rsi' in dominance_rsi_df.columns:
-            # RSI Line (white)
-            fig.add_trace(
-                go.Scatter(
-                    x=dominance_rsi_df['datetime'],
-                    y=dominance_rsi_df['rsi'],
-                    name='Dom Sum RSI',
-                    line=dict(color='white', width=2),
-                    showlegend=True
-                ),
-                row=2, col=1
-            )
-
-            # RSI Levels: 70, 50, 30
-            fig.add_hline(
-                y=70, line_dash="solid", line_color="rgba(255, 0, 0, 0.3)",
-                line_width=1, row=2, col=1
-            )
-            fig.add_hline(
-                y=50, line_dash="solid", line_color="rgba(128, 128, 128, 0.5)",
-                line_width=1, row=2, col=1
-            )
-            fig.add_hline(
-                y=30, line_dash="solid", line_color="rgba(0, 255, 0, 0.3)",
-                line_width=1, row=2, col=1
-            )
-
-            # Background colors for overbought/oversold
-            # Overbought (RSI > 70) - red bg
-            fig.add_hrect(
-                y0=70, y1=100,
-                fillcolor="rgba(255, 0, 0, 0.1)",
-                line_width=0,
-                row=2, col=1
-            )
-            # Oversold (RSI < 30) - green bg
-            fig.add_hrect(
-                y0=0, y1=30,
-                fillcolor="rgba(0, 255, 0, 0.1)",
-                line_width=0,
-                row=2, col=1
-            )
-
-            # Support/Resistance levels on RSI
-            if 'rsi_supports' in dominance_rsi_df.attrs:
-                supports = dominance_rsi_df.attrs['rsi_supports']
-                for idx, row_data in supports.iterrows():
-                    fig.add_hline(
-                        y=row_data['value'],
-                        line_dash="solid",
-                        line_color="lime",
-                        line_width=2,
-                        annotation_text=row_data['level'],
-                        annotation_position="right",
-                        row=2, col=1
-                    )
-
-            if 'rsi_resistances' in dominance_rsi_df.attrs:
-                resistances = dominance_rsi_df.attrs['rsi_resistances']
-                for idx, row_data in resistances.iterrows():
-                    fig.add_hline(
-                        y=row_data['value'],
-                        line_dash="solid",
-                        line_color="red",
-                        line_width=2,
-                        annotation_text=row_data['level'],
-                        annotation_position="right",
-                        row=2, col=1
-                    )
-
         # ========== BOTTOM PANEL: ORDER BOOK DEPTH ==========
 
         if orderbook_data:
@@ -794,7 +716,7 @@ class AltcoinRatioVisualizer:
                     line=dict(color='green', width=2),
                     hovertemplate='<b>Bid</b><br>Price: $%{x:.2f}<br>Cumulative: %{y:.2f}<extra></extra>'
                 ),
-                row=3, col=1
+                row=2, col=1
             )
 
             # Ask side (red area)
@@ -808,19 +730,19 @@ class AltcoinRatioVisualizer:
                     line=dict(color='red', width=2),
                     hovertemplate='<b>Ask</b><br>Price: $%{x:.2f}<br>Cumulative: %{y:.2f}<extra></extra>'
                 ),
-                row=3, col=1
+                row=2, col=1
             )
 
             # Mark best bid/ask
             if bids:
                 fig.add_vline(x=bids[0][0], line_dash="dash", line_color="green",
                              annotation_text="Best Bid", annotation_position="top",
-                             row=3, col=1)
+                             row=2, col=1)
 
             if asks:
                 fig.add_vline(x=asks[0][0], line_dash="dash", line_color="red",
                              annotation_text="Best Ask", annotation_position="top",
-                             row=3, col=1)
+                             row=2, col=1)
 
             # Calculate stats
             bid_volume = sum(qty for _, qty in bids)
@@ -902,29 +824,10 @@ class AltcoinRatioVisualizer:
             fixedrange=False  # Enable zoom/pan
         )
 
-        # Row 2: Dominance Sum RSI axes
-        fig.update_xaxes(
-            title_text="Time",
-            row=2, col=1,
-            showgrid=True,
-            gridwidth=1,
-            gridcolor='rgba(128, 128, 128, 0.2)',
-            fixedrange=False  # Enable zoom/pan
-        )
-        fig.update_yaxes(
-            title_text="RSI",
-            row=2, col=1,
-            showgrid=True,
-            gridwidth=1,
-            gridcolor='rgba(128, 128, 128, 0.2)',
-            range=[0, 100],  # RSI range 0-100
-            fixedrange=False  # Enable zoom/pan
-        )
-
-        # Row 3: Order Book axes
+        # Row 2: Order Book axes
         fig.update_xaxes(
             title_text="Price (USD)",
-            row=3, col=1,
+            row=2, col=1,
             showgrid=True,
             gridwidth=1,
             gridcolor='rgba(128, 128, 128, 0.2)',
@@ -932,7 +835,7 @@ class AltcoinRatioVisualizer:
         )
         fig.update_yaxes(
             title_text="Cumulative Volume",
-            row=3, col=1,
+            row=2, col=1,
             showgrid=True,
             gridwidth=1,
             gridcolor='rgba(128, 128, 128, 0.2)',
