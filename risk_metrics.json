@@ -17,10 +17,10 @@
     "volume": "Low",
     "trend": "Neutral"
   },
-  "DASH": {
-    "risk": 34,
+  "XRP": {
+    "risk": 55,
     "volatility": "Low",
-    "volume": "High",
+    "volume": "Low",
     "trend": "Neutral"
   }
 }
