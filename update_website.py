@@ -11,7 +11,6 @@ from altcoin_visualizer import AltcoinRatioVisualizer
 from liquidity_levels import LiquidityAnalyzer
 from risk_metrics_calculator import RiskMetricsCalculator
 from detailed_risk_analyzer import DetailedRiskAnalyzer
-from dominance_sum_rsi import DominanceSumRSI
 
 def main():
     print("=" * 70)
@@ -28,7 +27,6 @@ def main():
     liquidity = LiquidityAnalyzer()
     risk_calculator = RiskMetricsCalculator()
     detailed_analyzer = DetailedRiskAnalyzer()
-    dominance_rsi_calc = DominanceSumRSI()
 
     # Fetch market data with retry
     print("\n📊 Fetching market data...")
@@ -86,22 +84,6 @@ def main():
     # Footprint
     footprint_df = calculator.calculate_footprint(ratio_df, lookback=50)
 
-    # Calculate Dominance Sum RSI
-    print("📊 Calculating Dominance Sum RSI...")
-    dom_rsi_df = dominance_rsi_calc.fetch_dominance_data(hours=48)
-    if dom_rsi_df is not None:
-        dom_rsi_df = dominance_rsi_calc.calculate_rsi(dom_rsi_df, period=14, source='OHLC/4')
-        dom_sr_levels = dominance_rsi_calc.find_pivot_sr_levels(
-            dom_rsi_df, left_right=5, tolerance=5.0,
-            max_supports=4, max_resistances=4
-        )
-        # Store S/R levels in dataframe attrs
-        dom_rsi_df.attrs['rsi_supports'] = dom_sr_levels['supports']
-        dom_rsi_df.attrs['rsi_resistances'] = dom_sr_levels['resistances']
-        print(f"✅ Dominance RSI calculated: {dom_rsi_df['rsi'].iloc[-1]:.2f}")
-    else:
-        print("⚠ Dominance RSI failed, continuing without it")
-
     # Create main chart (WITHOUT order book - GitHub Actions can't do WebSocket)
     print("📊 Creating main chart...")
     output_file = "altcoin_combined_eth_live.html"
@@ -113,7 +95,6 @@ def main():
         resistance_levels=sr_result['resistances'],
         bsl_ssl={'bsl': bsl, 'ssl': ssl},
         footprint_df=footprint_df,
-        dominance_rsi_df=dom_rsi_df if dom_rsi_df is not None else None,
         orderbook_candles=100,
         output_file=output_file
     )
