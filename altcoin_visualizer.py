@@ -937,6 +937,9 @@ class AltcoinRatioVisualizer:
             'displaylogo': False,
             'modeBarButtonsToAdd': ['drawline', 'drawopenpath', 'eraseshape'],
             'responsive': True,
+            'staticPlot': False,  # CRITICAL: Enable interactivity
+            'editable': False,
+            'doubleClick': 'reset',  # Double click to reset zoom
         }
 
         # HTML oluştur
