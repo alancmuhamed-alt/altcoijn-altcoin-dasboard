@@ -524,7 +524,7 @@ class AltcoinRatioVisualizer:
             specs=[[{"secondary_y": False}],
                    [{"secondary_y": False}],
                    [{"secondary_y": False}]],
-            shared_xaxes=True  # Alt paneller birlikte hareket eder
+            shared_xaxes=False  # FIXED: Independent pan/zoom per panel
         )
 
         # ========== TOP PANEL: MAIN CHART ==========
