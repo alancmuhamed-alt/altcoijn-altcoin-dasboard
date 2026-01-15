@@ -1,10 +1,6 @@
 name: Update Crypto Dashboard
 
 on:
-  # Her 15 dakikada bir çalış
-  schedule:
-    - cron: '*/15 * * * *'
-
   # Manuel tetikleme
   workflow_dispatch:
 
