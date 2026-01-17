@@ -487,14 +487,12 @@ class AltcoinRatioVisualizer:
     def create_combined_chart(self, btc_df, ratio_df, orderbook_data,
                                support_levels=None, resistance_levels=None,
                                bsl_ssl=None, footprint_df=None,
-                               dominance_rsi_df=None,
                                orderbook_candles=50,
                                output_file='altcoin_combined.html'):
         """
         Create combined multi-panel chart:
-        - Top panel (50%): Altcoin Ratio with all indicators
-        - Middle panel (20%): Dominance Sum RSI
-        - Bottom panel (30%): Real-time Order Book Depth
+        - Top panel: Altcoin Ratio with all indicators
+        - Bottom panel: Real-time Order Book Depth
 
         Args:
             btc_df: BTC OHLCV data
@@ -504,27 +502,24 @@ class AltcoinRatioVisualizer:
             resistance_levels: Resistance levels DataFrame
             bsl_ssl: Dict with BSL and SSL values
             footprint_df: Footprint analysis data
-            dominance_rsi_df: Dominance Sum RSI data
             orderbook_candles: Number of recent candles to show for order book reference
             output_file: Output HTML filename
         """
         from plotly.subplots import make_subplots
 
-        # Create subplots: 3 rows, 1 column
-        # Top panel (50% height): Main chart
-        # Middle panel (20% height): Dominance RSI
+        # Create subplots: 2 rows, 1 column
+        # Top panel (70% height): Main chart
         # Bottom panel (30% height): Order book depth
+        # SHARED X-AXIS = Alt paneller birlikte hareket eder
         fig = make_subplots(
-            rows=3, cols=1,
-            row_heights=[0.50, 0.20, 0.30],
-            vertical_spacing=0.03,
+            rows=2, cols=1,
+            row_heights=[0.70, 0.30],
+            vertical_spacing=0.05,
             subplot_titles=('<b>Altcoin Ratio [15M] + All Indicators</b>',
-                           '<b>Dominance Sum RSI [1H] + Auto S/R</b>',
                            '<b>Real-Time Order Book Depth</b>'),
             specs=[[{"secondary_y": False}],
-                   [{"secondary_y": False}],
                    [{"secondary_y": False}]],
-            shared_xaxes=True  # Alt paneller birlikte hareket eder
+            shared_xaxes=True  # Alt paneller BAĞIMSIZ scroll ETMESİN
         )
 
         # ========== TOP PANEL: MAIN CHART ==========
@@ -688,71 +683,7 @@ class AltcoinRatioVisualizer:
                     row=1, col=1
                 )
 
-        # ========== MIDDLE PANEL: DOMINANCE SUM RSI ==========
-
-        if dominance_rsi_df is not None and not dominance_rsi_df.empty:
-            # Plot RSI line
-            fig.add_trace(
-                go.Scatter(
-                    x=dominance_rsi_df['datetime'],
-                    y=dominance_rsi_df['rsi'],
-                    name='Dominance RSI',
-                    line=dict(color='purple', width=2),
-                    hovertemplate='<b>RSI</b><br>Time: %{x}<br>Value: %{y:.2f}<extra></extra>'
-                ),
-                row=2, col=1
-            )
-
-            # Add horizontal lines at 70, 50, 30
-            fig.add_hline(y=70, line_dash="dash", line_color="red",
-                         annotation_text="Overbought (70)",
-                         annotation_position="right",
-                         row=2, col=1)
-            fig.add_hline(y=50, line_dash="dot", line_color="gray",
-                         annotation_text="Midline (50)",
-                         annotation_position="right",
-                         row=2, col=1)
-            fig.add_hline(y=30, line_dash="dash", line_color="green",
-                         annotation_text="Oversold (30)",
-                         annotation_position="right",
-                         row=2, col=1)
-
-            # Add overbought/oversold zones
-            fig.add_hrect(y0=70, y1=100, fillcolor="rgba(255, 0, 0, 0.1)",
-                         layer="below", line_width=0, row=2, col=1)
-            fig.add_hrect(y0=0, y1=30, fillcolor="rgba(0, 255, 0, 0.1)",
-                         layer="below", line_width=0, row=2, col=1)
-
-            # Add Support/Resistance levels from pivot detection
-            if hasattr(dominance_rsi_df, 'attrs'):
-                supports = dominance_rsi_df.attrs.get('rsi_supports', pd.DataFrame())
-                resistances = dominance_rsi_df.attrs.get('rsi_resistances', pd.DataFrame())
-
-                # Plot support levels
-                for idx, row_data in supports.iterrows():
-                    fig.add_hline(
-                        y=row_data['value'],
-                        line_dash="solid",
-                        line_color="lime",
-                        line_width=1,
-                        annotation_text=f"S{idx+1}",
-                        annotation_position="left",
-                        row=2, col=1
-                    )
-
-                # Plot resistance levels
-                for idx, row_data in resistances.iterrows():
-                    fig.add_hline(
-                        y=row_data['value'],
-                        line_dash="solid",
-                        line_color="red",
-                        line_width=1,
-                        annotation_text=f"R{idx+1}",
-                        annotation_position="left",
-                        row=2, col=1
-                    )
-
-        # ========== BOTTOM PANEL: ORDER BOOK DEPTH ==========
+        # ========== BOTTOM PANEL: ORDER BOOK DEPTH (ESKİ HALİ) ==========
 
         if orderbook_data:
             bids = orderbook_data['bids']
@@ -786,7 +717,7 @@ class AltcoinRatioVisualizer:
                     line=dict(color='green', width=2),
                     hovertemplate='<b>Bid</b><br>Price: $%{x:.2f}<br>Cumulative: %{y:.2f}<extra></extra>'
                 ),
-                row=3, col=1
+                row=2, col=1
             )
 
             # Ask side (red area)
@@ -800,19 +731,19 @@ class AltcoinRatioVisualizer:
                     line=dict(color='red', width=2),
                     hovertemplate='<b>Ask</b><br>Price: $%{x:.2f}<br>Cumulative: %{y:.2f}<extra></extra>'
                 ),
-                row=3, col=1
+                row=2, col=1
             )
 
             # Mark best bid/ask
             if bids:
                 fig.add_vline(x=bids[0][0], line_dash="dash", line_color="green",
                              annotation_text="Best Bid", annotation_position="top",
-                             row=3, col=1)
+                             row=2, col=1)
 
             if asks:
                 fig.add_vline(x=asks[0][0], line_dash="dash", line_color="red",
                              annotation_text="Best Ask", annotation_position="top",
-                             row=3, col=1)
+                             row=2, col=1)
 
             # Calculate stats
             bid_volume = sum(qty for _, qty in bids)
@@ -861,7 +792,7 @@ class AltcoinRatioVisualizer:
             autosize=True,
             height=None,
             showlegend=True,
-            dragmode='pan',  # Enable pan mode (zoom with scroll)
+            dragmode=False,  # Plotly drag KAPALI - native kullan
             xaxis_rangeslider_visible=False,
             legend=dict(
                 orientation="h",
@@ -876,70 +807,46 @@ class AltcoinRatioVisualizer:
             hoverlabel=dict(font_size=10)
         )
 
-        # Update axes - ZOOM/PAN ENABLEFixedRange=False ekle!
+        # Update axes
         fig.update_xaxes(
             title_text="Time",
             row=1, col=1,
             showgrid=True,
             gridwidth=1,
-            gridcolor='rgba(128, 128, 128, 0.2)',
-            fixedrange=False  # Enable zoom/pan
+            gridcolor='rgba(128, 128, 128, 0.2)'
         )
         fig.update_yaxes(
             title_text="Price",
             row=1, col=1,
             showgrid=True,
             gridwidth=1,
-            gridcolor='rgba(128, 128, 128, 0.2)',
-            fixedrange=False  # Enable zoom/pan
+            gridcolor='rgba(128, 128, 128, 0.2)'
         )
-
-        # Row 2: Dominance RSI axes
-        fig.update_xaxes(
-            title_text="Time",
-            row=2, col=1,
-            showgrid=True,
-            gridwidth=1,
-            gridcolor='rgba(128, 128, 128, 0.2)',
-            fixedrange=False  # Enable zoom/pan
-        )
-        fig.update_yaxes(
-            title_text="RSI",
-            row=2, col=1,
-            showgrid=True,
-            gridwidth=1,
-            gridcolor='rgba(128, 128, 128, 0.2)',
-            fixedrange=False  # Enable zoom/pan
-        )
-
-        # Row 3: Order Book axes
         fig.update_xaxes(
             title_text="Price (USD)",
-            row=3, col=1,
+            row=2, col=1,
             showgrid=True,
             gridwidth=1,
-            gridcolor='rgba(128, 128, 128, 0.2)',
-            fixedrange=False  # Enable zoom/pan
+            gridcolor='rgba(128, 128, 128, 0.2)'
         )
         fig.update_yaxes(
             title_text="Cumulative Volume",
-            row=3, col=1,
+            row=2, col=1,
             showgrid=True,
             gridwidth=1,
-            gridcolor='rgba(128, 128, 128, 0.2)',
-            fixedrange=False  # Enable zoom/pan
+            gridcolor='rgba(128, 128, 128, 0.2)'
         )
 
-        # ENABLE ZOOM/PAN - Plotly interactive features
+        # NATIVE BROWSER ZOOM - Plotly'yi engellemiyoruz
         config = {
-            'scrollZoom': True,  # Mouse wheel zoom
-            'displayModeBar': True,  # Show toolbar
+            'displayModeBar': False,
             'displaylogo': False,
-            'modeBarButtonsToAdd': ['drawline', 'drawopenpath', 'eraseshape'],
+            'scrollZoom': False,  # Plotly zoom KAPALI - browser kullan
+            'doubleClick': False,
             'responsive': True,
-            'staticPlot': False,  # CRITICAL: Enable interactivity
+            'staticPlot': False,
             'editable': False,
-            'doubleClick': 'reset',  # Double click to reset zoom
+            'showTips': False,
         }
 
         # HTML oluştur
@@ -967,15 +874,16 @@ class AltcoinRatioVisualizer:
             background: #0d1117;
             color: #c9d1d9;
             overflow: auto;
+            touch-action: auto !important;  /* NATIVE zoom izin ver */
             -webkit-overflow-scrolling: touch;
         }}
 
-        /* Plotly interaktivite için */
+        /* NATIVE browser zoom için */
         .plotly-graph-div,
         .js-plotly-plot,
         .plotly,
         svg.main-svg {{
-            touch-action: pan-x pan-y !important;  /* Plotly zoom/pan çalışsın */
+            touch-action: auto !important;  /* Plotly engelini kaldır */
             pointer-events: auto !important;
         }}
 
