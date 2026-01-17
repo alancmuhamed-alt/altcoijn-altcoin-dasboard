@@ -792,7 +792,7 @@ class AltcoinRatioVisualizer:
             autosize=True,
             height=None,
             showlegend=True,
-            dragmode='zoom',
+            dragmode=False,  # Plotly drag KAPALI - native kullan
             xaxis_rangeslider_visible=False,
             legend=dict(
                 orientation="h",
@@ -837,8 +837,20 @@ class AltcoinRatioVisualizer:
             gridcolor='rgba(128, 128, 128, 0.2)'
         )
 
-        # HTML oluştur - NO CONFIG, just like working risk analyzers
-        html_string = fig.to_html(include_plotlyjs='cdn', full_html=False)
+        # NATIVE BROWSER ZOOM - Plotly'yi engellemiyoruz
+        config = {
+            'displayModeBar': False,
+            'displaylogo': False,
+            'scrollZoom': False,  # Plotly zoom KAPALI - browser kullan
+            'doubleClick': False,
+            'responsive': True,
+            'staticPlot': False,
+            'editable': False,
+            'showTips': False,
+        }
+
+        # HTML oluştur
+        html_string = fig.to_html(config=config, include_plotlyjs='cdn')
 
         # MOBILE TOUCH OPTIMIZED - AUTO FULLSCREEN
         mobile_html = f'''<!DOCTYPE html>
