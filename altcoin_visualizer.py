@@ -837,16 +837,17 @@ class AltcoinRatioVisualizer:
             gridcolor='rgba(128, 128, 128, 0.2)'
         )
 
-        # NATIVE BROWSER ZOOM - Plotly'yi engellemiyoruz
+        # INTERACTIVE CHART - Zoom ve pan aktif
         config = {
-            'displayModeBar': False,
+            'displayModeBar': True,
             'displaylogo': False,
-            'scrollZoom': False,  # Plotly zoom KAPALI - browser kullan
-            'doubleClick': False,
+            'scrollZoom': True,  # Mouse wheel zoom AÇIK
+            'doubleClick': 'reset',  # Çift tık sıfırlar
             'responsive': True,
             'staticPlot': False,
             'editable': False,
-            'showTips': False,
+            'showTips': True,
+            'modeBarButtonsToAdd': ['pan2d', 'zoom2d', 'zoomIn2d', 'zoomOut2d', 'resetScale2d'],
         }
 
         # HTML oluştur
