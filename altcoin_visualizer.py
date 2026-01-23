@@ -542,7 +542,16 @@ class AltcoinRatioVisualizer:
             row=1, col=1
         )
 
-        # 2. Altcoin Ratio Candlesticks
+        # 2. Altcoin Ratio Candlesticks with detailed hover
+        import numpy as np
+
+        # Hover için customdata hazırla
+        hover_data = np.column_stack((
+            ratio_df['sma20'].fillna(0),
+            ratio_df['ema21'].fillna(0),
+            ratio_df['sma50'].fillna(0)
+        ))
+
         fig.add_trace(
             go.Candlestick(
                 x=ratio_df['datetime'],
@@ -555,7 +564,22 @@ class AltcoinRatioVisualizer:
                 decreasing_line_color='rgba(255, 204, 0, 0.8)',
                 increasing_fillcolor='rgba(255, 204, 0, 0.4)',
                 decreasing_fillcolor='rgba(255, 204, 0, 0.6)',
-                showlegend=True
+                showlegend=True,
+                customdata=hover_data,
+                hovertemplate='<b>%{x}</b><br><br>' +
+                              '<b>SMA 20</b><br>%{customdata[0]:,.3f}<br><br>' +
+                              '<b>EMA 21</b><br>%{customdata[1]:,.3f}<br><br>' +
+                              '<b>SMA 50</b><br>%{customdata[2]:,.3f}<br><br>' +
+                              '<b>Alt Ratio [15M]</b><br>' +
+                              'Open: %{open:,.2f}<br>' +
+                              'High: %{high:,.2f}<br>' +
+                              'Low: %{low:,.2f}<br>' +
+                              'Close: %{close:,.2f}<br><br>' +
+                              '<b>Indicators:</b><br>' +
+                              'SMA 20: %{customdata[0]:,.3f}<br>' +
+                              'EMA 21: %{customdata[1]:,.3f}<br>' +
+                              'SMA 50: %{customdata[2]:,.3f}' +
+                              '<extra></extra>'
             ),
             row=1, col=1
         )

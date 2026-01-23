@@ -4,6 +4,7 @@ GitHub Actions için tek seferlik güncelleme script'i
 Bilgisayar kapalıyken bile her 15 dakikada çalışır
 """
 import sys
+import requests
 from datetime import datetime
 import pytz
 from altcoin_ratio import AltcoinRatioCalculator
@@ -11,6 +12,55 @@ from altcoin_visualizer import AltcoinRatioVisualizer
 from liquidity_levels import LiquidityAnalyzer
 from risk_metrics_calculator import RiskMetricsCalculator
 from detailed_risk_analyzer import DetailedRiskAnalyzer
+
+
+def fetch_orderbook_rest(symbol='ETHUSDT', limit=20):
+    """Binance REST API ile order book çek"""
+    try:
+        url = f"https://api.binance.com/api/v3/depth?symbol={symbol}&limit={limit}"
+        response = requests.get(url, timeout=10)
+        data = response.json()
+
+        if 'bids' in data and 'asks' in data:
+            bids = [[float(price), float(qty)] for price, qty in data['bids']]
+            asks = [[float(price), float(qty)] for price, qty in data['asks']]
+
+            # Cumulative hesapla
+            bid_prices = [b[0] for b in bids]
+            ask_prices = [a[0] for a in asks]
+
+            bid_cum = []
+            ask_cum = []
+            cum = 0
+            for b in bids:
+                cum += b[1]
+                bid_cum.append(cum)
+            cum = 0
+            for a in asks:
+                cum += a[1]
+                ask_cum.append(cum)
+
+            # Volume ratio hesapla
+            total_bid_vol = sum(b[1] for b in bids)
+            total_ask_vol = sum(a[1] for a in asks)
+            volume_ratio = total_bid_vol / total_ask_vol if total_ask_vol > 0 else 1
+
+            return {
+                'bids': bids,
+                'asks': asks,
+                'bid_prices': bid_prices,
+                'ask_prices': ask_prices,
+                'bid_cumulative': bid_cum,
+                'ask_cumulative': ask_cum,
+                'spread': asks[0][0] - bids[0][0] if bids and asks else 0,
+                'mid_price': (bids[0][0] + asks[0][0]) / 2 if bids and asks else 0,
+                'symbol': symbol,
+                'volume_ratio': volume_ratio,
+                'imbalance': 'Bid Heavy' if volume_ratio > 1.2 else ('Ask Heavy' if volume_ratio < 0.8 else 'Balanced')
+            }
+    except Exception as e:
+        print(f"⚠ Order book fetch error: {e}")
+    return None
 
 def main():
     print("=" * 70)
@@ -84,13 +134,21 @@ def main():
     # Footprint
     footprint_df = calculator.calculate_footprint(ratio_df, lookback=50)
 
-    # Create main chart (WITHOUT order book - GitHub Actions can't do WebSocket)
+    # Fetch Order Book via REST API
+    print("📊 Fetching order book...")
+    orderbook_data = fetch_orderbook_rest('ETHUSDT', limit=20)
+    if orderbook_data:
+        print(f"  ✅ Spread: ${orderbook_data['spread']:.4f} | Mid: ${orderbook_data['mid_price']:.2f}")
+    else:
+        print("  ⚠ Order book fetch failed, continuing without it")
+
+    # Create main chart
     print("📊 Creating main chart...")
     output_file = "altcoin_combined_eth_live.html"
     visualizer.create_combined_chart(
         btc_df=overlay_df,
         ratio_df=ratio_df,
-        orderbook_data=None,  # No WebSocket in GitHub Actions
+        orderbook_data=orderbook_data,
         support_levels=sr_result['supports'],
         resistance_levels=sr_result['resistances'],
         bsl_ssl={'bsl': bsl, 'ssl': ssl},
