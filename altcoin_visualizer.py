@@ -542,15 +542,8 @@ class AltcoinRatioVisualizer:
             row=1, col=1
         )
 
-        # 2. Altcoin Ratio Candlesticks with detailed hover
+        # 2. Altcoin Ratio Candlesticks
         import numpy as np
-
-        # Hover için customdata hazırla
-        hover_data = np.column_stack((
-            ratio_df['sma20'].fillna(0),
-            ratio_df['ema21'].fillna(0),
-            ratio_df['sma50'].fillna(0)
-        ))
 
         fig.add_trace(
             go.Candlestick(
@@ -565,16 +558,40 @@ class AltcoinRatioVisualizer:
                 increasing_fillcolor='rgba(255, 204, 0, 0.4)',
                 decreasing_fillcolor='rgba(255, 204, 0, 0.6)',
                 showlegend=True,
+                hoverinfo='skip'  # Hover'ı kapat, aşağıdaki scatter gösterecek
+            ),
+            row=1, col=1
+        )
+
+        # 2b. Invisible Scatter for detailed hover info
+        hover_data = np.column_stack((
+            ratio_df['sma20'].fillna(0),
+            ratio_df['ema21'].fillna(0),
+            ratio_df['sma50'].fillna(0),
+            ratio_df['ar_open'],
+            ratio_df['ar_high'],
+            ratio_df['ar_low'],
+            ratio_df['ar_close']
+        ))
+
+        fig.add_trace(
+            go.Scatter(
+                x=ratio_df['datetime'],
+                y=ratio_df['ar_close'],
+                mode='markers',
+                marker=dict(size=0.1, opacity=0),  # Invisible
+                name='',
+                showlegend=False,
                 customdata=hover_data,
                 hovertemplate='<b>%{x}</b><br><br>' +
                               '<b>SMA 20</b><br>%{customdata[0]:,.3f}<br><br>' +
                               '<b>EMA 21</b><br>%{customdata[1]:,.3f}<br><br>' +
                               '<b>SMA 50</b><br>%{customdata[2]:,.3f}<br><br>' +
                               '<b>Alt Ratio [15M]</b><br>' +
-                              'Open: %{open:,.2f}<br>' +
-                              'High: %{high:,.2f}<br>' +
-                              'Low: %{low:,.2f}<br>' +
-                              'Close: %{close:,.2f}<br><br>' +
+                              'Open: %{customdata[3]:,.2f}<br>' +
+                              'High: %{customdata[4]:,.2f}<br>' +
+                              'Low: %{customdata[5]:,.2f}<br>' +
+                              'Close: %{customdata[6]:,.2f}<br><br>' +
                               '<b>Indicators:</b><br>' +
                               'SMA 20: %{customdata[0]:,.3f}<br>' +
                               'EMA 21: %{customdata[1]:,.3f}<br>' +
