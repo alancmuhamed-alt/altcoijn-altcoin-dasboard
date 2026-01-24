@@ -37,7 +37,8 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git add -A
           git diff --staged --quiet || git commit -m "Auto-update data - $(date -u +'%Y-%m-%d %H:%M UTC')"
-          git push
+          git pull --rebase origin main || true
+          git push || git push --force-with-lease
 
   deploy:
     needs: update
