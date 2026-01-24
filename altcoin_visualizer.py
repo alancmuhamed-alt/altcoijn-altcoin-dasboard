@@ -519,7 +519,7 @@ class AltcoinRatioVisualizer:
                            '<b>Real-Time Order Book Depth</b>'),
             specs=[[{"secondary_y": False}],
                    [{"secondary_y": False}]],
-            shared_xaxes=True  # Alt paneller BAĞIMSIZ scroll ETMESİN
+            shared_xaxes=False  # Order Book farkli x-axis (price) kullaniyor
         )
 
         # ========== TOP PANEL: MAIN CHART ==========
