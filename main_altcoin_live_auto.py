@@ -59,7 +59,7 @@ def main():
 
     print("✓ Streams active!\n")
 
-    output_file = "/Users/muhamedalanc/altcoin-dashboard/altcoin_combined_eth_live.html"
+    output_file = "/Users/muhamedalanc/Desktop/altcoin-dashboard/altcoin_combined_eth_live.html"
     update_count = 0
     dubai_tz = pytz.timezone('Asia/Dubai')
 
@@ -152,7 +152,7 @@ def main():
 
             # AUTO-PUSH TO GITHUB
             import subprocess
-            git_repo = "/Users/muhamedalanc/altcoin-dashboard"
+            git_repo = "/Users/muhamedalanc/Desktop/altcoin-dashboard"
             try:
                 print(f"🔄 Pushing to GitHub...")
                 subprocess.run(f"cd {git_repo} && git add altcoin_combined_eth_live.html", shell=True, check=True)
