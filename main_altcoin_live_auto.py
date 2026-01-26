@@ -155,12 +155,20 @@ def main():
             git_repo = "/Users/muhamedalanc/Desktop/altcoin-dashboard"
             try:
                 print(f"🔄 Pushing to GitHub...")
+                # Git durumunu temizle
+                subprocess.run(f"cd {git_repo} && rm -rf .git/rebase-merge 2>/dev/null", shell=True, check=False)
+                subprocess.run(f"cd {git_repo} && git checkout main 2>/dev/null", shell=True, check=False)
+                subprocess.run(f"cd {git_repo} && git fetch origin", shell=True, check=False)
+                subprocess.run(f"cd {git_repo} && git reset --hard origin/main", shell=True, check=False)
+                # Dosyayı ekle ve push et
                 subprocess.run(f"cd {git_repo} && git add altcoin_combined_eth_live.html", shell=True, check=True)
                 commit_msg = f"Auto-update dashboard - Dubai {dubai_time_now}"
-                subprocess.run(f'cd {git_repo} && git commit -m "{commit_msg}"', shell=True, check=True)
-                subprocess.run(f'cd {git_repo} && git pull --rebase origin main', shell=True, check=False)
-                subprocess.run(f'cd {git_repo} && git push', shell=True, check=True)
-                print(f"✓ GitHub güncellendi: {dubai_time_now}")
+                result = subprocess.run(f'cd {git_repo} && git commit -m "{commit_msg}"', shell=True, capture_output=True)
+                if result.returncode == 0:
+                    subprocess.run(f'cd {git_repo} && git push', shell=True, check=True)
+                    print(f"✓ GitHub güncellendi: {dubai_time_now}")
+                else:
+                    print(f"ℹ No changes to commit")
             except Exception as e:
                 print(f"⚠ GitHub push failed: {e}")
 
