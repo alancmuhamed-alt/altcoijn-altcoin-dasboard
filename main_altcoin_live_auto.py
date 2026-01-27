@@ -22,7 +22,7 @@ def main():
     timeframe = "15m"
     days = 10
     orderbook_candles = 100
-    update_interval = 900  # 15 dakika (900 saniye)
+    update_interval = 60  # 1 dakika
 
     print("=" * 70)
     print("  CANLI ALTCOIN TERMINAL - OTOMATIK MOD")
