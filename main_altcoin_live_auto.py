@@ -9,6 +9,8 @@ import pytz
 from altcoin_ratio import AltcoinRatioCalculator
 from altcoin_visualizer import AltcoinRatioVisualizer
 from liquidity_levels import LiquidityAnalyzer
+from risk_metrics_calculator import RiskMetricsCalculator
+from detailed_risk_analyzer import DetailedRiskAnalyzer
 
 # Force unbuffered output
 sys.stdout = open(sys.stdout.fileno(), 'w', buffering=1)
@@ -22,7 +24,7 @@ def main():
     timeframe = "15m"
     days = 10
     orderbook_candles = 100
-    update_interval = 60  # 1 dakika
+    update_interval = 900  # 1 dakika
 
     print("=" * 70)
     print("  CANLI ALTCOIN TERMINAL - OTOMATIK MOD")
@@ -150,10 +152,24 @@ def main():
             print(f"✓ Dashboard güncellendi: Dubai {dubai_time_now}")
             print(f"✓ HTML file yazıldı: {output_file}")
 
-            # AUTO-PUSH TO GITHUB
+            # RISK METRICS GÜNCELLE
             import subprocess
             import shutil
             git_repo = "/Users/muhamedalanc/Desktop/altcoin-dashboard"
+            print("📊 Risk metrikleri güncelleniyor...")
+            try:
+                risk_calc = RiskMetricsCalculator()
+                detail_analyzer = DetailedRiskAnalyzer()
+                coins = {'SOL': 'SOL/USDT', 'ETH': 'ETH/USDT', 'BNB': 'BNB/USDT', 'XRP': 'XRP/USDT'}
+                risk_metrics = risk_calc.calculate_all_metrics(coins)
+                risk_calc.save_to_json(risk_metrics, f"{git_repo}/risk_metrics.json")
+                for cn, sym in coins.items():
+                    detail_analyzer.create_dashboard(sym, cn, f"{git_repo}/{cn.lower()}_risk_analyzer.html")
+                print("✓ Risk metrics güncellendi")
+            except Exception as e:
+                print(f"⚠ Risk metrics error: {e}")
+
+            # AUTO-PUSH TO GITHUB
             html_file = f"{git_repo}/altcoin_combined_eth_live.html"
             try:
                 print(f"🔄 Pushing to GitHub...")
@@ -170,7 +186,7 @@ def main():
                 shutil.copy(backup_file, html_file)
 
                 # Commit ve push
-                subprocess.run(f"cd {git_repo} && git add altcoin_combined_eth_live.html", shell=True, check=True)
+                subprocess.run(f"cd {git_repo} && git add altcoin_combined_eth_live.html risk_metrics.json *_risk_analyzer.html", shell=True, check=True)
                 commit_msg = f"Auto-update dashboard - Dubai {dubai_time_now}"
                 result = subprocess.run(f'cd {git_repo} && git commit -m "{commit_msg}"', shell=True, capture_output=True)
                 if result.returncode == 0:
