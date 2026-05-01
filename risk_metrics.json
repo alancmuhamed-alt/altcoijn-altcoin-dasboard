@@ -6,13 +6,13 @@
     "trend": "Neutral"
   },
   "ETH": {
-    "risk": 42,
+    "risk": 22,
     "volatility": "Low",
-    "volume": "Medium",
+    "volume": "High",
     "trend": "Neutral"
   },
   "BNB": {
-    "risk": 33,
+    "risk": 53,
     "volatility": "Low",
     "volume": "Medium",
     "trend": "Neutral"
