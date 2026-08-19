@@ -12,15 +12,15 @@
     "trend": "Bullish"
   },
   "BNB": {
-    "risk": 18,
+    "risk": 29,
     "volatility": "Low",
     "volume": "Very High",
     "trend": "Neutral"
   },
   "XRP": {
-    "risk": 14,
+    "risk": 24,
     "volatility": "Low",
-    "volume": "High",
+    "volume": "Medium",
     "trend": "Neutral"
   }
 }
